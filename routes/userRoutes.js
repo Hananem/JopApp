@@ -1,27 +1,32 @@
-const express = require('express');
+import { Router } from "express";
+import {
+  signup,
+  signin,
+  getAllUsersData,
+  deleteAccount,
+  getProfileForUser,
+  updatePassword,
+  updateAccount,
+  forgetPassword,
+  getAccountsByRecoveryEmail
+} from "../controllers/userController.js";
+import {verifyToken}  from '../middlewares/verifyToken';
+
 const router = express.Router();
-const UserController = require('../controllers/userController');
 
-router.post('/signup', UserController.signup);
-router.post('/signin', UserController.signin);
-router.get('/allusers', UserController.getAllUsersData);
+// Public routes (no authentication required)
+router.post('/signup', signup);
+router.post('/signin', signin);
+router.post('/account/password/forget', forgetPassword);
 
-// Delete Account
-router.delete('/account/delete/:userId', UserController.deleteAccount)
-
-
-
-// Get Profile Data for  User
-router.get('/user/profile/:userId', UserController.getProfileForUser);
-
-// Update Password
-router.put('/account/password/update/:userId', UserController.updatePassword);
-
-// Forget Password 
-router.post('/account/password/forget', UserController.forgetPassword);
-
-// Get All Accounts Associated to a Specific Recovery Email
-router.get('/accounts/recoveryEmail/:recoveryEmail', UserController.getAccountsByRecoveryEmail);
-
+// Protected routes (authentication required)
+router.get('/allusers', verifyToken, getAllUsersData);
+router.delete('/account/delete/:userId', verifyToken, deleteAccount);
+router.get('/user/profile/:userId', verifyToken, getProfileForUser);
+router.get('/account/update/:userId', verifyToken,  updateAccount);
+router.put('/account/password/update/:userId', verifyToken, updatePassword);
+router.get('/accounts/recoveryEmail/:recoveryEmail', verifyToken, getAccountsByRecoveryEmail);
+// Logout route
+router.get('/logout', verifyToken, logout);
 
 module.exports = router;

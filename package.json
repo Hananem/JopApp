@@ -2,6 +2,7 @@
   "name": "user",
   "version": "1.0.0",
   "description": "",
+   "type": "module",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,7 +16,9 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^2.2.12",
-    "mongoose": "^8.2.0"
+    "mongoose": "^8.2.0",
+    "validator": "^13.11.0"
   }
 }

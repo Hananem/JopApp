@@ -1,5 +1,7 @@
-const bcrypt = require('bcryptjs')
-const User = require('../models/userModel')
+
+import jwt from ('jsonwebtoken');
+import bcrypt from "bcryptjs";
+import User from "../models/userModel.js";
 
 exports.signup = async (req,res) => {
     try{
@@ -11,9 +13,18 @@ exports.signup = async (req,res) => {
             status:'online',
             recoveryEmail:req.body.recoveryEmail,
             DOB:req.body.DOB,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName 
         })
         await user.save();
-        res.status(201).send("User created successfully")
+             // Generate JWT token
+             const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '10d' });
+
+              // Set JWT token as a cookie in the response
+        res.cookie('token', token, { httpOnly: true, maxAge: 10 * 24 * 60 * 60 * 1000 });
+        
+        // Send response with token
+        res.status(201).json({ token });
     } catch (error) {
         console.log(error)
         res.status(500).send("Internal Server Error")
@@ -33,7 +44,14 @@ exports.signin = async (req, res) => {
         }
         user.status = 'online';
         await user.save();
-        res.status(200).send("Sign in successful");
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '10d' }); 
+
+         // Set JWT token as a cookie in the response
+         res.cookie('token', token, { httpOnly: true, maxAge: 10 * 24 * 60 * 60 * 1000 });
+        // Send response with token
+        res.status(200).json({ token });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");
@@ -43,7 +61,8 @@ exports.signin = async (req, res) => {
 
 exports.updateAccount = async (req, res) => {
     try {
-        const user = req.user;
+        const userId = req.params.userId;
+        const user = await User.findById(userId);
         user.email = req.body.email || user.email;
         user.mobileNumber = req.body.mobileNumber || user.mobileNumber;
         user.recoveryEmail = req.body.recoveryEmail || user.recoveryEmail;
@@ -146,6 +165,21 @@ exports.getAccountsByRecoveryEmail = async (req, res) => {
     try {
         const users = await User.find({ recoveryEmail: req.params.recoveryEmail });
         res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
+exports.logout = async (req, res) => {
+    try {
+        // Check if token is present in cookies
+        if (!req.cookies.token) {
+            // If token is missing, consider logout successful
+            return res.status(200).send("Logout successful (token was missing)");
+        }
+        res.clearCookie('token');
+        res.status(200).send("Logout successful");
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");

@@ -1,15 +1,53 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import validator  from 'validator';
 
 const userSchema = new mongoose.Schema({
-    email: String,
-    mobileNumber: Number, 
-    password: String,
-    status: String,
-    recoveryEmail: String,
-    DOB: Date,
-    lastName: String,
-    firstName: String
+    email: {
+        type:String,
+        required:true,
+        validate:{
+            validator:validator.isEmail,
+            message:'{VALUE} is not a valid email '
+           }
+    },
+    mobileNumber: {
+        type:String,
+        required:true,
+        validate:{
+            validator:validator.isMobilePhone,
+            message:'{VALUE} is not a valid mobile number '
+           },
+    },
+    password: {
+        type:String,
+        required:true,
+       minlength:8
+    },
+    status: {
+        type:String,
+       default:'online'
+       
+    },
+    recoveryEmail: {
+        type:String,
+        required:true,
+        validate:{
+            validator:validator.isEmail,
+            message:'{VALUE} is not a valid email '
+           }
+    },
+    
+    lastName: {
+        type:String,
+        required:true,
+       
+    },
+    firstName: {
+        type:String,
+        required:true,
+       
+    },
 });
 
 userSchema.methods.generateHash = async function(password) {
